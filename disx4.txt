@@ -1,11 +1,5 @@
-# disx
 
-DISX4 - a multi-CPU disassembler for various vintage CPU architectures
-
-This is Bruce Tomlin's disx disassembler. I'm no longer able to reach
-the svn so I'm posting it here and working with that.
-
-## DISX4 - Full-Screeen Interactive Disassembler
+DISX4 - Full-Screeen Interactive Disassembler
 by Bruce Tomlin - bruce@xi6.com
 
 
@@ -23,7 +17,7 @@ Cool things that it doesn't do:
 - handle multiple code segments with different address ranges
 
 
-## === BULDING ===
+=== BULDING ===
 
 This uses a standard makefile, so use the "make" command to build it. It should work in a standard Linux or MacOS environment with C++ developer tools installed. If this isn't sufficient information, then google for "how to use make".
 
@@ -34,7 +28,7 @@ If you plan on modifying the code, you might want to use "make depend" first. Th
 I haven't tried to build this on Windows. It might work with either Cygwin or the Linux subsystem. At least one person has tried with Cygwin, but its system headers defined "addr_t" for some reason.
 
 
-## === REFERENCES ===
+=== REFERENCES ===
 
 Each line of disassembly can have one external reference, to either code or data. Note that some CPUs have 16-bit immediate instructions which can potentially be either an address or a number. This reference address will be used for creating labels, and for code tracing. Word or longword data lines will only allow a reference from the first word on the line.
 
@@ -43,12 +37,12 @@ Label creation can be suppressed to certain addresses by using the Control-R com
 Address 0x0000 is specifically prevented from automatically generating a reference, because it is almost never used as such.
 
 
-## === TRACING ===
+=== TRACING ===
 
 If the label is a code reference, the T command can disassemble into referenced code after finishing the current block of code. This can quickly disasssemble large ranges of code, but it can also be misled by "tricks" like subroutines that pop the return address, read data from that address, and then put it back before returning.  Note that the Z-80 series is particularly vulnerable to blank (0x20) characters causing bogus code references. The "rip-stop" functionality attempts to detect the most obvious situations.
 
 
-## === COMMENTS ===
+=== COMMENTS ===
 
 Comments can be attached to any code line by using the semicolon (';') command. This will bring up the current comment (if any) for editing. Press Return to save the line, press Escape to cancel changes, or delete the entire comment line and press Return to remove the comment.
 
@@ -59,7 +53,7 @@ If a comment "falls off" because its address is now in the middle of a line, it 
 NOTE: Comments are not affected by the Undo command!
 
 
-## === UNDO ===
+=== UNDO ===
 
 There is minimal undo support, in the form of one saved state. It is automacially saved by the shift-C and shift-T commands, and manually by the control-U key command. To use it, use the shift-U key command. But it's really not in a useful state right now.
 
@@ -98,7 +92,7 @@ If started up with no parameters, it will show an empty file, and the selected C
 "-a" and "-l" will generate a .asm and/or .lst file, then return to the command line.
 
 
-## === SCREEN NAVIGATION KEYS ===
+=== SCREEN NAVIGATION KEYS ===
 
 Up-arrow        Move up one line
 Down-arrow      Move down one line
@@ -114,7 +108,7 @@ Control-B       Move to top of screen, then move up a page at a time
 Control-D       Move to bottom of screen, then move down a page at a time
 
 
-## === SINGLE-KEY COMMANDS ===
+=== SINGLE-KEY COMMANDS ===
 
 0 - 9           Digit keys let you specify a count of 0-99 for some commands.
                 The escape key will clear the count. Some commands have a maximum count.
@@ -196,7 +190,7 @@ shift-U         Undo to last saved state. State is automatically saved before sh
 $               Change the default hint flags for newly disassembled instructions.
 
 
-## === TEXT COMMANDS ===
+=== TEXT COMMANDS ===
 
 : command       Enter a text command
 / text          Search forward - Searches are case insensitive and collapse all spaces
@@ -283,7 +277,7 @@ hex             Change the code display between hexadecimal and octal.
 octal           This is only a temporary override and is not saved on exit.
 
 
-## === RIP-STOP ===
+=== RIP-STOP ===
 
 An auto-tracing disassembler can be very powerful, and with great power comes great responsibility! Each instruction set has its own quirks when it reaches data that isn't code. The problem is that many bogus labels can get created, which are a pain to clean up, and it could run wild over even more data. Each CPU disassembler can report that a given instruction is suspicious, and to stop tracing. The shift-C command stops immediately, and the shift-T command stops the current branch. To manually disassemble an offending instruction, use the lowercase "c" command.
 
@@ -313,7 +307,7 @@ Z-80:
 - two HLT instructions in a row (repeated 0xFF)
 
 
-## === HINT FLAGS ===
+=== HINT FLAGS ===
 
 Some diassemblers can use a few extra hints on what to do. There are two flag bits for each address, which can be one of four combinations. The meaning of these is different for each disassembler.
 
@@ -356,7 +350,7 @@ TMS9900: Immediate values and index offsets become a reference with a hint flag 
 PDP-11: Register mode chooses R7 or PC, indexed offset formatted as decimal, immediate mode can be formatted as decimal or character.
 
 
-## === LABELS ===
+=== LABELS ===
 
 Addresses can be overriden with custom labels. This lets you name things, or use labels from existing source code, and it lets you add address references for an external ROM.
 
@@ -376,7 +370,7 @@ NOTE: THIS FEATURE IS CURRENTLY EXPERIMENTAL AND UNDER DEVELOPMENT
 - symbols are not loaded if a .ctl file was not loaded
 
 
-## == WIDE ARCHITECTURES ==
+== WIDE ARCHITECTURES ==
 
 Most modern architectures are based on the concept of an 8-bit byte as the smallest addressable unit. The only signifcant exception is older PIC processors. This causes a problem when trying to support as many architectures as possible in a single code base. Some sort of compromises need to be made. But there are quite a few legacy architectures where the instruction word is 10-16 bits long.
 
@@ -405,7 +399,7 @@ Addresses in .sym files use the raw byte address.
 Addresses in .equ files use the scaled word address, because they are user-visible.
 
 
-## === MISCELLANEOUS STUFF ===
+=== MISCELLANEOUS STUFF ===
 
 * If the .bin file has been moved to a different directory, the path saved in the .ctl file will not match. There will still be an attempt to load the .ctl file from the same directory as the .bin file.
 
@@ -420,7 +414,7 @@ Addresses in .equ files use the scaled word address, because they are user-visib
 * Because Thumb often uses the low bit of an address to indicate Thumb code, longword references to Thumb code will be displayed as the even address "+1". You can not use the "^" command to put a label at the even address, but will have to manually add a label at the even address.
 
 
-## === DISASSEMBLER STATUS ===
+=== DISASSEMBLER STATUS ===
 
 This is a rough estimation of the quality of each disassembler:
 
@@ -460,7 +454,7 @@ This is a rough estimation of the quality of each disassembler:
 3  disscmp.cpp   - seems to work okay
 3  dis68hc16.cpp - re-assembled some Motorola example code
 
-## === Q AND A ===
+=== Q AND A ===
 
 Q: Why is it version "4"?
 A: Because I've had disassemblers for a very long time. Version "2" was when I added tracing and a configuration file. It was very detailed, and it could do a good job, but it was a real pain to use. Version 3 was rewriting everything to use C++ inheritance. But it was still such a pain to use that for many years I had been wanting to do an interactive disassembler "someday". Once I finally started writing the code, it only took about two months for V4 to become functional. The V3 disassembler cores were then ported to V4.
@@ -480,7 +474,7 @@ Q: It crashed with an "assert"!
 A: Try to reproduce the problem. Go back and do stuff up to right before the problem, then save. Try a step at a time until it crashes. What is needed to debug this is the binary file, the .ctl file from just before the crash, and what keys to press to cause the crash.
 
 
-##=== HINTS AND TIPS ===
+=== HINTS AND TIPS ===
 
 * Sometimes you have a binary of an unknown CPU type. It is very helpful to identify hex opcodes before disassembling so that you know which CPU type to select, and also to know where the hardware-defined entry points are. Sometimes even determining the base address of code can be difficult.
 
@@ -516,7 +510,7 @@ LE 8086 - return instructions C2 C3 CA CB / branch instructions 7xrr with rr F0-
 - this is of course not as simple as it sounds
 
 
-## === CHANGELOG ===
+=== CHANGELOG ===
 
 4.0.0 - 2022-05-27
 
