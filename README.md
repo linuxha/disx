@@ -74,7 +74,8 @@ Options:
     -c ?           show list of supported CPU types
     -b xxxx        base address
     -s xxxx        size of binary data
-    -o xxxx        offset to start of data in file
+        -o xxxx        offset to start of data in file
+        -m             load input as Motorola S1 records
     -a             create binfile.asm and exit
     -l             create binfile.lst and exit
     -!             don't load binfile.ctl
@@ -92,6 +93,8 @@ If started up with no parameters, it will show an empty file, and the selected C
 "-s xxxx" will specify the maximum size of the code image to be loaded.
 
 "-o xxxx" will specify the offset in the file to the first byte of the code image. This allows skipping a header.
+
+"-m" will load the input file as Motorola S1 records. In this mode, ".ctl" data is ignored.
 
 "-!" will prevent automatic loading of "binfile.ctl". This will ignore any existing work in "binfile.ctl".
 
@@ -249,6 +252,12 @@ load <file> [!] [Bxxxx] [Sxxxx] [Oxxxx]
                   Warning: if the parameters result in a smaller data area,
                   some disassembly state could be lost!
                   Warning: this does not check if the current file has changes!
+
+loads1 <file>
+                                                                Load a Motorola S1 file.
+                                                                - This ignores any existing "file.ctl" state.
+                                                                - If the file name is a single "-" character, the current file
+                                                                        will be reloaded.
 
 label / l [name] If name is specified, a custom label is added for the current
                 code address. If no name is specified, any custom label for the

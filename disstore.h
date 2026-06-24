@@ -115,6 +115,7 @@ public:
     int get_len(addr_t addr);
     addr_t get_instr_start(addr_t addr);
     int load_bin(const char *fname, addr_t ofs, addr_t size, addr_t base);
+    int load_s1(const char *fname);
     void unload();
 
     // put an instruction of type type and length len at addr

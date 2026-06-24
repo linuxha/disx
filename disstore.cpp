@@ -3,10 +3,47 @@
 #include "disstore.h"
 
 #include "discmt.h"
+#include <ctype.h>
 
 
 // global storage handler object
 DisStore rom;
+
+
+// =====================================================
+static bool srec_is_hex(char c)
+{
+    return (c >= '0' && c <= '9') ||
+           (c >= 'A' && c <= 'F') ||
+           (c >= 'a' && c <= 'f');
+}
+
+
+// =====================================================
+static int srec_hex_nibble(char c)
+{
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    }
+    c = (char) toupper((unsigned char) c);
+    if (c >= 'A' && c <= 'F') {
+        return c - 'A' + 10;
+    }
+    return -1;
+}
+
+
+// =====================================================
+static bool srec_parse_hex_byte(const char *p, uint8_t &out)
+{
+    int hi = srec_hex_nibble(p[0]);
+    int lo = srec_hex_nibble(p[1]);
+    if (hi < 0 || lo < 0) {
+        return false;
+    }
+    out = (uint8_t) ((hi << 4) | lo);
+    return true;
+}
 
 
 // =====================================================
@@ -400,6 +437,227 @@ error:
     // remove data storage
     unload();
 
+    return -1;
+}
+
+
+// =====================================================
+//  int load_s1(const char *fname);
+// returns -1 if error, else image size
+int DisStore::load_s1(const char *fname)
+{
+    char line[1024];
+    uint8_t rec[260];
+    bool has_data = false;
+    addr_t min_addr = 0;
+    addr_t max_addr = 0;
+
+    // remove any previous image data
+    unload();
+    cmt.free_syms();
+    sym.free_syms();
+    equ.free_syms();
+
+    // first pass: validate records and determine address range
+    FILE *f = fopen(fname, "rt");
+    if (!f) {
+        goto error;
+    }
+
+    while (fgets(line, sizeof line, f)) {
+        char *p = line;
+        while (*p && isspace((unsigned char) *p)) {
+            p++;
+        }
+
+        if (!*p) {
+            continue;
+        }
+
+        if (toupper((unsigned char) p[0]) != 'S') {
+            goto error;
+        }
+
+        char rectype = (char) toupper((unsigned char) p[1]);
+        if (rectype < '0' || rectype > '9') {
+            goto error;
+        }
+
+        p += 2;
+
+        // collect hex bytes from this record line
+        int nbytes = 0;
+        while (srec_is_hex(p[0]) && srec_is_hex(p[1])) {
+            if (nbytes >= (int) ARRAY_SIZE(rec)) {
+                goto error;
+            }
+            if (!srec_parse_hex_byte(p, rec[nbytes])) {
+                goto error;
+            }
+            nbytes++;
+            p += 2;
+        }
+
+        while (*p && isspace((unsigned char) *p)) {
+            p++;
+        }
+        if (*p != 0) {
+            goto error;
+        }
+
+        if (nbytes < 2) {
+            goto error;
+        }
+
+        int count = rec[0];
+        if (nbytes != count + 1) {
+            goto error;
+        }
+
+        // S-record checksum: sum(count..checksum) low byte must be 0xFF
+        int sum = 0;
+        for (int i = 0; i < nbytes; i++) {
+            sum += rec[i];
+        }
+        if ((sum & 0xFF) != 0xFF) {
+            goto error;
+        }
+
+        if (rectype == '1') {
+            if (count < 3) {
+                goto error;
+            }
+
+            addr_t addr = ((addr_t) rec[1] << 8) | rec[2];
+            int data_len = count - 3;
+
+            if (data_len < 0) {
+                goto error;
+            }
+
+            addr_t end_addr = addr + data_len;
+            if (end_addr < addr || end_addr > 0x10000L) {
+                goto error;
+            }
+
+            if (!has_data) {
+                min_addr = addr;
+                max_addr = end_addr;
+                has_data = true;
+            } else {
+                if (addr < min_addr) {
+                    min_addr = addr;
+                }
+                if (end_addr > max_addr) {
+                    max_addr = end_addr;
+                }
+            }
+        } else if (rectype == '2' || rectype == '3') {
+            // Explicitly reject non-S1 data records.
+            goto error;
+        }
+    }
+
+    fclose(f);
+    f = NULL;
+
+    if (!has_data || max_addr < min_addr) {
+        goto error;
+    }
+
+    // save the file path
+    strcpy(_fname, fname);
+
+    _base = min_addr;
+    _size = (size_t) (max_addr - min_addr);
+    _ofs = 0;
+
+    // allocate and initialize storage
+    _data = (uint8_t *) malloc(_size + 1);
+    if (!_data) {
+        goto error;
+    }
+    memset(_data, 0x00, _size);
+
+    _attr = (uint8_t *) malloc(_size + 1);
+    if (! _attr) {
+        goto error;
+    }
+    memset(_attr, 0x00, _size);
+
+    _type = (uint8_t *) malloc(_size + 1);
+    if (! _type) {
+        goto error;
+    }
+    memset(_type, mData, _size);
+
+    _undo_attr = (uint8_t *) malloc(_size + 1);
+    if (! _undo_attr) {
+        goto error;
+    }
+    _undo_type = (uint8_t *) malloc(_size + 1);
+    if (! _undo_type) {
+        goto error;
+    }
+    save_undo();
+
+    // second pass: copy S1 payload bytes into image buffer
+    f = fopen(fname, "rt");
+    if (!f) {
+        goto error;
+    }
+
+    while (fgets(line, sizeof line, f)) {
+        char *p = line;
+        while (*p && isspace((unsigned char) *p)) {
+            p++;
+        }
+
+        if (!*p || toupper((unsigned char) p[0]) != 'S') {
+            continue;
+        }
+
+        char rectype = (char) toupper((unsigned char) p[1]);
+        if (rectype != '1') {
+            continue;
+        }
+
+        p += 2;
+
+        int nbytes = 0;
+        while (srec_is_hex(p[0]) && srec_is_hex(p[1])) {
+            if (nbytes >= (int) ARRAY_SIZE(rec)) {
+                goto error;
+            }
+            if (!srec_parse_hex_byte(p, rec[nbytes])) {
+                goto error;
+            }
+            nbytes++;
+            p += 2;
+        }
+
+        int count = rec[0];
+        addr_t addr = ((addr_t) rec[1] << 8) | rec[2];
+        int data_len = count - 3;
+        addr_t start = addr - _base;
+
+        if (start < 0 || (size_t) (start + data_len) > _size) {
+            goto error;
+        }
+
+        memcpy(_data + start, rec + 3, data_len);
+    }
+
+    fclose(f);
+    f = NULL;
+
+    return (int) _size;
+
+error:
+    if (f) {
+        fclose(f);
+    }
+    unload();
     return -1;
 }
 

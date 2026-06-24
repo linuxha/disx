@@ -282,14 +282,22 @@ int DisSave::load_file(const char *fname, addr_t ofs, addr_t base, addr_t size, 
 #endif
 
     FILE *f = NULL;
-    if (!(force & FORCE_FNAME)) {
+    if (!(force & (FORCE_FNAME | FORCE_S1))) {
         // open file for binary read
         f = fopen(path, "r");
     }
     if (!f) { // unable to open file
         // if .ctl file not found, try to open image using specified parameters
-        if (fname[0] && rom.load_bin(fname, ofs, size, base) < 0) {
-            sprintf(err, "error loading binary file %s", fname);
+        int rc = -1;
+        if (fname[0]) {
+            if (force & FORCE_S1) {
+                rc = rom.load_s1(fname);
+            } else {
+                rc = rom.load_bin(fname, ofs, size, base);
+            }
+        }
+        if (rc < 0) {
+            sprintf(err, "error loading file %s", fname);
             scrn.error(err);
             return -1;
         }

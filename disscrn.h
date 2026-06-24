@@ -92,6 +92,7 @@ public: // can't be private unless dispatch tables are moved into the class
     void do_cmd_save(char *p);  // handle "save" command
     void do_cmd_wq  (char *p);  // handle "wq"   command
     void do_cmd_load(char *p);  // handle "load" command
+    void do_cmd_loads1(char *p);// handle "loads1" command
     void do_cmd_new (char *p);  // handle "new"  command
     void do_cmd_rst (char *p);  // handle "rst"  command
     void do_cmd_go  (char *p);  // handle "go"   command

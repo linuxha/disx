@@ -14,7 +14,8 @@ public:
         FORCE_FNAME = 1, // override file name from .ctl file
         FORCE_BASE  = 2, // override base address from .ctl file
         FORCE_OFS   = 4, // override start offset from .ctl file
-        FORCE_SIZE  = 8  // override image size from .ctl file
+        FORCE_SIZE  = 8, // override image size from .ctl file
+        FORCE_S1    = 16 // load Motorola S1 data records (ignore .ctl file)
     };
 
     int save_file();

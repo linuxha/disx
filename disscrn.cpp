@@ -104,6 +104,7 @@ struct cmd_line_t line_cmds[] =
     { "wq",     &DisScrn::do_cmd_wq     }, // "wq"     - save state and quit
     { "w",      &DisScrn::do_cmd_save   }, // "w"      - save disassembly state
     { "load",   &DisScrn::do_cmd_load   }, // "load"   - load binary and disassembly state
+    { "loads1", &DisScrn::do_cmd_loads1 }, // "loads1" - load Motorola S1 file
 //  { "l",      &DisScrn::do_cmd_load   }, // "l"      - load binary and disassembly state
 //  { "new",    &DisScrn::do_cmd_new    }, // "new"    - unload current file
     { "rst",    &DisScrn::do_cmd_rst    }, // "rst"    - set lengths after Z80 RST instrs
@@ -907,6 +908,36 @@ void DisScrn::do_cmd_load(char *p)
         }
         init_scrn(false); // do not reset saved _top and _sel
     }
+}
+
+
+// =====================================================
+// :loads1 "filename"
+void DisScrn::do_cmd_loads1(char *p)
+{
+    DisSave save;
+
+    // attempt to get filename
+    char fname[256] = {0};
+    GetString(p, fname);
+
+    // reload same file if fname is "-"
+    if (fname[0] == '-' && fname[1] == 0) {
+        strcpy(fname, rom._fname);
+    }
+
+    if (!fname[0]) {
+        error("no S1 file name specified");
+        return;
+    }
+
+    if (save.load_file(fname, 0, 0, 0, save.FORCE_S1 | save.FORCE_FNAME)) {
+        // failed to load, don't reset screen pointers
+        // binary data has been cleared if failure during load
+        return;
+    }
+
+    init_scrn(false); // do not reset saved _top and _sel
 }
 
 

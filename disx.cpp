@@ -41,6 +41,7 @@ void usage(void)
     printf("    -b xxxx        base address\n");
     printf("    -s xxxx        size of binary data\n");
     printf("    -o xxxx        offset to start of data in file\n");
+    printf("    -m             load input as Motorola S1 records\n");
     printf("    -a             create binfile.asm and exit\n");
     printf("    -l             create binfile.lst and exit\n");
     printf("    -!             don't load binfile.ctl\n");
@@ -54,7 +55,7 @@ void getopts(int argc, char * const argv[])
     int ch;
     int scale = defCpu->word_size();
 
-    while ((ch = getopt(argc, argv, "c:b:s:o:!al?")) != -1) {
+    while ((ch = getopt(argc, argv, "c:b:s:o:!alm?")) != -1) {
         switch (ch) {
             case 'c': // select CPU type
                 if (optarg[0] == '?') {
@@ -105,6 +106,10 @@ void getopts(int argc, char * const argv[])
 
             case 'l': // create binfile.lst and exit
                 do_lst = true;
+                break;
+
+            case 'm': // load Motorola S1 file
+                force |= DisSave::FORCE_S1;
                 break;
 
             case '!': // force binary parameters
