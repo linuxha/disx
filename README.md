@@ -5,6 +5,7 @@ DISX4 - a multi-CPU disassembler for various vintage CPU architectures
 This is Bruce Tomlin's disx disassembler. I'm no longer able to reach
 the svn so I'm posting it here and working with that.
 
+
 ## DISX4 - Full-Screeen Interactive Disassembler
 by Bruce Tomlin - bruce@xi6.com
 
@@ -21,6 +22,40 @@ Cool things that it doesn't do:
 - deal with split references (high half in one instruction, low half in another)
 - combine separate binary files (if your code comes from multiple ROMs, you will need to create a combined binary first)
 - handle multiple code segments with different address ranges
+
+
+## Supported CPU
+
+- Supported CPU types:
+  - Zilog Z80 and Intel 8085 disassembler: 8080 Z8080 8085 8085U Z8085 Z80 Z180 GB GBZ80
+  - MOS Technology 6502 disassembler: 6502 6502U 65C02 65SC02 65816 65C816
+  - Motorola 6809 disassembler: 6809
+  - Motorola 68HC11 disassembler: 6800 6801 6802 6803 6808 6301 6303 68HC11
+  - Motorola 68HC12 disassembler: 68HC12
+  - Motorola 68HC16 disassembler: 68HC16
+  - Motorola 68HC05 disassembler: 6805 68HC05
+  - Motorola 68000 disassembler: 68K 68000 68010 68020
+  - Intel 8051 disassembler: 8051 8032
+  - Intel 8048 disassembler: 8021 8048 8049 8035 8041 8042 NS405
+  - Intel 8008 disassembler: 8008
+  - Intel 4004 disassembler: 4004
+  - Zilog Z8 disassembler: Z8
+  - RCA 1802 disassembler: 1802
+  - Fairchild F8 disassembler: F8
+  - PIC disassembler: PIC12 PIC14
+  - ARM disassembler: ARM ARM-LE ARM-BE
+  - ARM Thumb disassembler: THUMB THUMB-LE THUMB-BE THUMB2 THUMB2-LE THUMB2-BE
+  - TMS9900 disassembler: 9900
+  - DG Nova disassembler: Nova
+  - GI CP1610 disassembler: CP1610
+  - NEC D78C10 disassembler: D78C10
+  - NEC D78K0 disassembler: D78K0
+  - NEC D78K3 disassembler: D78K3
+  - Intel 8086 disassembler: 8086
+  - DEC PDP-11 disassembler: PDP11
+  - Signetics 2650 disassembler: 2650
+  - NS IMP-16 disassembler: IMP16
+  - SC/MP disassembler: SCMP
 
 
 ## === BULDING ===
@@ -64,7 +99,7 @@ NOTE: Comments are not affected by the Undo command!
 There is minimal undo support, in the form of one saved state. It is automacially saved by the shift-C and shift-T commands, and manually by the control-U key command. To use it, use the shift-U key command. But it's really not in a useful state right now.
 
 
-=== COMMAND LINE ===
+## === COMMAND LINE ===
 
 Usage:
     disx4 [options] [binfile]
